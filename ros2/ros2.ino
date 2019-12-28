@@ -15,7 +15,6 @@
 #define AMG88XX_HEIGHT (AMG88xx_PIXEL_ARRAY_SIZE / AMG88XX_WIDTH)
 
 // variables for AMG88XX
-sensor_msgs::Image img_msg;
 Adafruit_AMG88xx amg;
 float pixels[AMG88xx_PIXEL_ARRAY_SIZE];
 
