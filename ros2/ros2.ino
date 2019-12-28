@@ -1,10 +1,14 @@
 // ROS2
 #include <ros2arduino.h>
 #include <ros2/sensor_msgs/Image.hpp>
+#include <ros2/geometry_msgs/Twist.hpp>
 
 // Adafruit AMG88XX
-#include <Wire.h>
+// #include <Wire.h>
 #include <Adafruit_AMG88xx.h>
+
+// Legs
+#include "dyne.hpp"
 
 // config for ros2arduino
 #define XRCEDDS_PORT  Serial
@@ -33,6 +37,16 @@ void publishImage(sensor_msgs::Image* img_msg, void* arg)
   amg.readPixels(pixels);
 }
 
+void subscribeTwist(geometry_msgs::Twist* msg, void* arg)
+{
+  (void)(arg);
+
+  float vel_x = msg->linear.x;
+  float rot_z = msg->angular.z;
+
+  dyne::UpdateRequest(vel_x, rot_z);
+}
+
 class Dp0Node : public ros2::Node
 {
 public:
@@ -41,6 +55,8 @@ public:
   {
     ros2::Publisher<sensor_msgs::Image>* publisher_ = this->createPublisher<sensor_msgs::Image>("image_raw");
     this->createWallFreq(PUBLISH_FREQUENCY, (ros2::CallbackFunc)publishImage, nullptr, publisher_);
+
+    this->createSubscriber<geometry_msgs::Twist>("cmd_vel", (ros2::CallbackFunc)subscribeTwist, nullptr);
   }
 };
 
@@ -53,6 +69,7 @@ void setupAmg88xx() {
 
 void setup() 
 {
+  dyne::Stop();
   setupAmg88xx();
   
   XRCEDDS_PORT.begin(115200);
